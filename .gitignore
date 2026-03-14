@@ -1,0 +1,22 @@
+# IDE
+.idea/
+.cursor/
+
+# OS
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# App data (never commit)
+*.key
+data.db
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
