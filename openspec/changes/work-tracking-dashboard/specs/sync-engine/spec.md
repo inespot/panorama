@@ -26,6 +26,17 @@ When a new source is successfully connected (OAuth callback completes), the sync
 - **WHEN** an immediate sync is triggered for a newly connected source
 - **THEN** the regular cron schedule SHALL continue unaffected; the next scheduled cycle will simply see an up-to-date `last_sync_at` and perform a normal incremental fetch
 
+### Requirement: Manual sync trigger
+The user SHALL be able to trigger an immediate sync of all connected sources from the dashboard UI. The sync button SHALL be visible in the Ongoing Work view toolbar, next to the search bar. The API SHALL expose a `POST /api/sync-status/trigger` endpoint that initiates a sync for all connected sources in the background.
+
+#### Scenario: User clicks sync button
+- **WHEN** the user clicks the sync button in the Ongoing Work view
+- **THEN** the system SHALL trigger an immediate sync for all connected sources and refresh the displayed data once the sync completes
+
+#### Scenario: No connected sources
+- **WHEN** the user triggers a manual sync with no sources connected
+- **THEN** the system SHALL respond gracefully with an informational message
+
 ### Requirement: Sync lifecycle abstraction
 The sync engine SHALL be behind an interface so the scheduling mechanism (node-cron) can be replaced with a more scalable solution (e.g., BullMQ, external scheduler) later without modifying connectors or the rest of the application.
 

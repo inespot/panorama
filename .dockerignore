@@ -1,0 +1,10 @@
+node_modules
+dist
+build
+.env
+.env.local
+*.key
+data.db
+.cursor
+.idea
+.git

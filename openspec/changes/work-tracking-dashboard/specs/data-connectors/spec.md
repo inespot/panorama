@@ -37,15 +37,19 @@ This replaces positional parameters and is extensible for future needs.
 All connectors SHALL operate in read-only mode. No connector SHALL write, update, or delete data in the external source. The only outbound requests to source APIs SHALL be OAuth authorization flows and read-only data fetches.
 
 ### Requirement: GitHub connector
-The system SHALL provide a connector for GitHub that produces two work-item types: `github-pr` and `github-issue`. It fetches issues, pull requests, and review data assigned to or authored by the authenticated user. By default, the connector SHALL fetch from repositories owned by the user. The user MAY configure additional organization names in settings to include repos from those orgs.
+The system SHALL provide a connector for GitHub that produces two work-item types: `github-pr` and `github-issue`. The connector SHALL only fetch items from repositories the user owns and from explicitly configured organizations — it SHALL NOT fetch items from repositories outside these scopes, even if the user is assigned, authored, or requested for review there. The user MAY configure additional organization names in settings to include repos from those orgs.
 
 #### Scenario: Fetching from user-owned repos
 - **WHEN** the sync engine triggers a fetch and no organizations are configured
-- **THEN** the connector SHALL retrieve issues and PRs from repositories owned by the authenticated user
+- **THEN** the connector SHALL retrieve issues and PRs only from repositories owned by the authenticated user
 
 #### Scenario: Fetching from configured organizations
 - **WHEN** the user has configured organizations (e.g., "elastic") in settings
-- **THEN** the sync engine SHALL pass them via `FetchContext.config` (as `githubOrgs`) and the connector SHALL also fetch issues and PRs assigned to or authored by the user from repositories in those organizations
+- **THEN** the sync engine SHALL pass them via `FetchContext.config` (as `githubOrgs`) and the connector SHALL also fetch issues and PRs involving the user from repositories in those organizations
+
+#### Scenario: Items from unscoped repositories
+- **WHEN** the user is assigned to, authored, or requested for review on items in repositories outside their own repos and configured organizations
+- **THEN** those items SHALL NOT be fetched
 
 #### Scenario: Normalizing GitHub items
 - **WHEN** the connector receives raw GitHub API responses
@@ -99,11 +103,11 @@ For each GitHub pull request, the connector SHALL determine the `action_needed` 
 - **THEN** the `action_needed` field does not apply (the `github_issues` table has no such column)
 
 ### Requirement: GitHub authentication
-The GitHub connector SHALL use GitHub's OAuth 2.0 flow. GitHub OAuth App tokens are long-lived and do not expire, so no token refresh is needed. The connector SHALL implement `getAuthUrl` and `handleCallback` but MAY leave `refreshToken` as a no-op.
+The GitHub connector SHALL use GitHub's OAuth 2.0 flow with read-only scopes (`read:user`, `read:org`, `public_repo`). This limits access to public repositories only — no write access is requested. GitHub OAuth App tokens are long-lived and do not expire, so no token refresh is needed. The connector SHALL implement `getAuthUrl` and `handleCallback` but MAY leave `refreshToken` as a no-op.
 
 #### Scenario: Connecting a GitHub account
 - **WHEN** the user initiates the GitHub connection flow from settings
-- **THEN** the system SHALL redirect to GitHub's OAuth authorization page with read-only scopes, exchange the returned code for an access token, fetch the user's GitHub username (via `/user`), and store the token encrypted alongside the username
+- **THEN** the system SHALL redirect to GitHub's OAuth authorization page with read-only scopes (`read:user`, `read:org`, `public_repo`), exchange the returned code for an access token, fetch the user's GitHub username (via `/user`), and store the token encrypted alongside the username
 
 #### Scenario: GitHub tokens do not expire
 - **WHEN** the connector holds a GitHub OAuth token
@@ -146,7 +150,7 @@ The Jira connector SHALL use Jira Cloud's OAuth 2.0 (3LO) authorization code flo
 
 #### Scenario: Connecting a Jira account
 - **WHEN** the user initiates the Jira connection flow from settings
-- **THEN** the system SHALL redirect to Jira's OAuth authorization page with read-only scopes, exchange the returned code for access and refresh tokens, and store them encrypted
+- **THEN** the system SHALL redirect to Jira's OAuth authorization page with read-only scopes (`read:jira-work`, `read:jira-user`, `offline_access`), exchange the returned code for access and refresh tokens, and store them encrypted
 
 #### Scenario: Jira Cloud site selection
 - **WHEN** the OAuth callback completes and the system calls `GET /oauth/token/accessible-resources`

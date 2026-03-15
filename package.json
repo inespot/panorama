@@ -1,0 +1,29 @@
+{
+  "name": "panorama",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter @panorama/api dev",
+    "dev:web": "pnpm --filter @panorama/web dev",
+    "build": "pnpm --filter @panorama/web build && pnpm --filter @panorama/api build",
+    "lint": "pnpm -r lint",
+    "format": "prettier --write .",
+    "test": "pnpm --filter @panorama/api test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.3",
+    "globals": "^17.4.0",
+    "prettier": "^3.8.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.57.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "esbuild"
+    ]
+  }
+}
