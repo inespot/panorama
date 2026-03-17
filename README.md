@@ -1,5 +1,7 @@
 # Panorama
 
+⚠️ This project is a WIP.
+
 A local-first work tracking dashboard that aggregates GitHub issues, pull requests, and Jira tickets into a single view. Built as a learning experiment and exploration of spec-driven development.
 
 ## Features
